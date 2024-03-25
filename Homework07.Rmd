@@ -85,7 +85,7 @@ head(en,10)
 
 # Question
 
-Use the “dominant” copepod species data (from HW1).  Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data.  You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.
+Use the “dominant” (composition > 5%) copepod species data (from HW1).  Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data.  You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.
          
   - Try to compare the results between different cluster algorithms
   - Determine final number of clusters and describe differences among them

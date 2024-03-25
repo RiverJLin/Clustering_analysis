@@ -1,0 +1,476 @@
+---
+title: "Clustering Analysis"
+subtitle: "Computer Intensive Statistics in Ecology Homework #07"
+author: "林畇沂"
+output: 
+  bookdown::html_document2:
+    fig_caption: true
+    number_sections: true
+    toc: true
+    toc_depth: 2
+    toc_float:
+       collapsed: false
+       smooth_scroll: false
+      
+---
+
+<style type="text/css">
+
+h1.title {
+  font-size: 32px;
+  color: DarkBlue;
+}
+h1 { /* Header 1 */
+  font-size: 25px;
+}
+h2 { /* Header 2 */
+    font-size: 20px;
+}
+h3 { /* Header 3 */
+  font-size: 16px;
+}
+
+</style>
+
+
+
+
+```{r setup, include=FALSE}
+library(knitr)
+library(dplyr)
+library(kableExtra)
+knitr::opts_chunk$set(fig.dim = c(8, 6), fig.align ="center", echo = TRUE)
+options(knitr.table.format = "html")
+```
+
+
+---
+
+
+# Data
+
+
+## Species composition
+
+The proportional abundance of each copepod species was recorded in each cruise-station and in each season. 10 cruise-stations were sampled in spring (p1~p25), 15 stations were sampled in summer (s18~s29, sA~sG), and 9 stations were sampled in winter (w23~w29, wA~wD), 34 stations in total. 181 rows represent 181 copepod species.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+setwd("/Users/yi/Desktop/clustering")
+cop_com <- read.table("/Users/yi/Desktop/copepod_composition.txt",header=T)
+cop_name <- read.csv("/Users/yi/Desktop/den_table.csv",row.names = 1) %>% rownames()
+cop_com <- cbind(cop_name,cop_com)
+```
+
+  - Data preview
+```{r}
+head(cop_com)
+```
+
+
+<br>
+
+## Environmental variables 
+
+The environmental data for each cruise-station. This includes temperature, salinity, fluorescence, and dissolved oxygen (DO). Here I used temperature as a factor to describe the difference among clusters of dominant copepod compositions.
+
+```{r, echo=FALSE}
+en <- read.table("/Users/yi/Desktop/enviANDdensity.txt",header=T)
+```
+
+```{r}
+head(en,10)
+```
+
+---
+
+# Question
+
+Use the “dominant” copepod species data (from HW1).  Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data.  You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.
+         
+  - Try to compare the results between different cluster algorithms
+  - Determine final number of clusters and describe differences among them
+
+---
+
+# Analysis
+
+
+## Non-hierarchical clustering (NHC)
+
+To determine how many clusters should I generate, I made the scree plots of elbow method. Here I performed two clustering methods: K-means and K-medoid (pam).
+
+  - Prepare data set for clustering <br>
+    (**Notice**: Since the data is proportional, there is no need for standardization)
+    
+```{r message=FALSE, warning=FALSE}
+ cop_com <- cop_com[,-1]
+
+# select dominant species
+dominant <- c()
+for (j in 1:181) { 
+  
+  t.f <- cop_com[j,]>=0.05
+  #for the species j, if their composition >= 5% in any station,
+  #t.f will contain at least 1 TRUE, means the length of t.f==T will >0
+  
+  if(length(t.f[t.f==T])>0) {
+    dominant[j] <- "yes"
+    #if composition of species j >=5%, assign "yes" as the jth element of the new, blank vecter"dominant"
+  }
+  else{
+    dominant[j] <- "no"
+    #if composition of species j <5%, assign "no" 
+  }
+  
+}
+
+#dominant copepod composition
+dom <- t(cop_com[dominant=="yes",])
+
+```
+  
+
+  - Elbow scree plots:
+```{r figchunk1,fig.cap="Elbow (K-medoid)",fig.dim=c(8,5), message=FALSE, warning=FALSE}
+library("vegan")
+library("cluster")
+library("fpc")
+library("ggplot2")
+library("factoextra")
+
+#determine numbers of clusters by elbow (K-medoid)
+fviz_nbclust(dom, 
+             FUNcluster = pam,   #K-means, pam, hcut, clara
+             method = "wss",     # total within sum of square
+             k.max = 20         # max number of clusters to consider
+) + 
+  
+  labs(title="Elbow (K-medoid)"
+) +
+  
+  ylab("Within groups sum of squares"
+)+
+  geom_vline(xintercept = 3,      
+             linetype = 2)
+```
+
+<br>
+
+```{r figchunk2,fig.cap="Elbow (K-means)",fig.dim=c(8,5), message=FALSE, warning=FALSE}
+#determine numbers of clusters by elbow (K-means)
+fviz_nbclust(dom, 
+             FUNcluster = kmeans,   
+             method = "wss",     
+             k.max = 20         
+) + 
+  
+  labs(title="Elbow (K-means)"
+  ) +
+  
+  ylab("Within groups sum of squares"
+  )+
+  geom_vline(xintercept = 3,      
+             linetype = 2)
+```
+
+<br>
+
+Suggesting by the elbow plots, the ideal numbers of clusters are 3 for both K-means and K-medoid.
+
+<br>
+
+  - Generate cluster plots: 
+```{r figchunk3,fig.cap="Cluster plot (K-medoid)",message=FALSE, warning=FALSE}
+dom_pam <-pam(dom,k=3)    # apply NHC using pam (K-medoid) method
+dom_kme <-kmeans(dom,centers=3)  # apply NHC using K-means method
+
+#cluster plot (K-medoid)
+fviz_cluster(dom_pam,       
+             data = dom,           
+             geom = c("text","point"), 
+             stand = F,
+             frame.type = "norm",
+             ellipse = T
+            
+)+
+  labs(title = "Cluster plot (K-medoid)")
+```
+
+<br>
+
+```{r figchunk4,fig.cap="Cluster plot (K-means)",message=FALSE, warning=FALSE}
+#cluster plot (K-means)
+fviz_cluster(dom_kme,       
+             data = dom,           
+             geom = c("text","point"), 
+             stand = F,
+             frame.type = "norm",
+             ellipse = T
+)+
+  labs(title = "Cluster plot (K-means)")  
+
+```
+
+
+
+<br>
+
+The two methods showed quite similar clustering geometries(Fig \@ref(fig:figchunk3) and Fig \@ref(fig:figchunk4). To describe differences among clusters, I performed further statistical comparisons: 
+
+```{r figchunk5,fig.cap="Boxplot of K-medoid NHC",message=FALSE, warning=FALSE}
+x <- as.factor(rep(dom_pam$cluster,29))  #cluster groups of K-medoid
+y <- as.vector(dom)  #dominant species composition
+
+
+#boxplot
+boxplot(y~x,xlab="clusters",ylab = "Dominant copepod compositions ",main="K-medoid")
+```
+
+<br>
+
+```{r message=FALSE, warning=FALSE}
+#anova
+summary(aov(y~x))
+
+
+#Levene's Test for Homogeneity of Variance
+lawstat::levene.test(y,x)
+
+
+# Kruskal-Wallis Test
+kruskal.test(y~x)  
+
+#Dunn Post Hoc test
+
+dunn <- FSA::dunnTest(y~x,method= "bonferroni")
+dunn[[2]][dunn[[2]]$P.adj<=0.05,]  #select Comparisons with p smaller than 0.05 
+```
+
+
+According to the results of ANOVA, there are no significant difference among three clusters (F = 0.235, df = 2, p-value = 0.79) in K-medoid clustering. But for the Kruskal-Wallis test, significant results are shown (K-W chi-squared = 26.213, df = 2, p-values = 2.032`*`10^-6^), this difference came from that between cluster 1 and 2, based on Dunn post hoc test (Z = -5.082, adjusted p = 1.123`*`10^-6^). 
+
+<br>
+
+```{r figchunk6,fig.cap="Boxplot of K-means NHC",message=FALSE, warning=FALSE}
+x2 <- as.factor(rep(dom_kme$cluster,29)) #cluster groups of K-means
+
+#boxplot
+boxplot(y~x2,xlab="clusters",ylab = "Dominant copepod compositions ",main="K-means")
+```
+
+<br>
+
+```{r fig.cap="Boxplot of K-means NHC",message=FALSE, warning=FALSE}
+#anova
+summary(aov(y~x2))
+
+#Levene's Test for Homogeneity of Variance
+lawstat::levene.test(y,x2)
+
+# Kruskal-Wallis Test
+kruskal.test(y~x2) 
+
+
+#Dunn Post Hoc test
+dunn2 <- FSA::dunnTest(y~x2,method= "bonferroni")
+dunn2[[2]][dunn2[[2]]$P.adj<=0.05,]  #select Comparisons with p smaller than 0.05 
+```
+
+Similar to K-medoid clustering, there are no significant differences among three clusters based on ANOVA (F = 0.218, df = 2, p-value = 0.804) in K-means clustering. But for the Kruskal-Wallis test, significant results are shown (K-W chi-squared = 26.352, df = 2, p-values = 1.896`*`10^-6^), the difference came from that between cluster 1 and 2 (Z = 2.646, adjusted p = 0.024), also 2 and 3 (Z = -5.121, adjusted p = 9.112`*`10^-7^), based on the Dunn post hoc test. 
+
+The contradiction of ANOVA and the Kruskal-Wallis test might be due to the heterogeneity of within-group variances, based on the Levene’s test (Test Statistic = 0.377, p = 0.686 for K-medoid; Test Statistic = 0.319, p = 0.727 for K-means)
+
+<br>
+
+## Hierarchical clustering (HC)
+
+For HC, I performed two joining methods: Ward’s minimum-variance-linkage and average-linkage, using two types of distance matrices: Jaccard and Euclidean distance respectively, and calculating their Agglomeration coefficient (AC). 
+
+  - Distance matrices: 
+```{r message=FALSE, warning=FALSE}
+#distance matrices
+dom_bin <- dist(dom,method="binary")  #binary: same as Jaccard
+dom_eucl <- dist(dom,method="euclidean")
+```
+
+<br>
+
+ - Ward’s minimum-variance-linkage with Jaccard distance: 
+```{r figchunk7,fig.cap="Wards-linkage Dendrogram (Jaccard)",message=FALSE, warning=FALSE}
+#conduct HC
+hc_ward_b <- hclust(dom_bin,method="ward.D")  # Wards-linkage
+
+
+#dendrogram
+plot(hc_ward_b,main="Wards-linkage Dendrogram (Jaccard)",xlab="Station",labels=hc_ward_b[[4]])
+rect.hclust(hc_ward_b,h=1)
+```
+
+<br>
+
+```{r ,fig.cap="Wards-linkage Dendrogram (Jaccard)",message=FALSE, warning=FALSE}
+#aggolmerative coefficient
+ward_b_ac <- agnes(dom_bin,method="ward")$ac
+ward_b_ac
+```
+
+<br>
+
+  - Ward’s minimum-variance-linkage with Euclidean distance:
+```{r figchunk8,fig.cap = "Wards-linkage Dendrogram (Euclidean)",message=FALSE, warning=FALSE}
+#conduct HC
+hc_ward_e <- hclust(dom_eucl,method="ward.D")
+
+
+#dendrogram
+plot(hc_ward_e,main="Wards-linkage Dendrogram (Euclidean)",xlab="Station",labels=hc_ward_e[[4]])
+rect.hclust(hc_ward_e,h=1)
+```
+
+<br>
+
+```{r fig.cap = "Wards-linkage Dendrogram (Euclidean)",message=FALSE, warning=FALSE}
+#aggolmerative coefficient
+ward_e_ac <- agnes(dom_eucl,method="ward")$ac
+ward_e_ac
+```
+
+
+<br>
+
+  - Average-linkage with Jaccard distance: 
+```{r figchunk9,fig.cap ="Average-linkage Dendrogram (Jaccard)",message=FALSE, warning=FALSE}
+#conduct HC
+hc_avg_b <- hclust(dom_bin,method="average")  # average-linkage
+
+
+#dendrogram
+plot(hc_avg_b,main="Average-linkage Dendrogram (Jaccard)",xlab="Station",labels=hc_avg_b[[4]])
+rect.hclust(hc_avg_b,h=0.5)
+```
+
+<br>
+
+```{r fig.cap ="Average-linkage Dendrogram (Jaccard)",message=FALSE, warning=FALSE}
+#aggolmerative coefficient
+avg_b_ac <- agnes(dom_bin,method="average")$ac
+avg_b_ac 
+```
+
+<br>
+
+  - Average-linkage with Euclidean distance: 
+```{r figchunk10,fig.cap = "Average-linkage Dendrogram (Euclidean)",message=FALSE, warning=FALSE}
+#conduct HC
+hc_avg_e <- hclust(dom_eucl,method="average") # average-linkage
+
+
+#dendrogram
+plot(hc_avg_e,main="Average-linkage Dendrogram (Euclidean)",xlab="Station",labels=hc_avg_e[[4]])
+```
+<br>
+
+```{r message=FALSE, warning=FALSE}
+#aggolmerative coefficient
+avg_e_ac <- agnes(dom_eucl,method="average")$ac
+avg_e_ac
+```
+
+
+For Jaccard and Euclidean distance, AC values are only slightly different, but AC values are apparently higher in Ward-linkage HC, indicating a more balanced clustering structure (see Fig \@ref(fig:figchunk9) and Fig \@ref(fig:figchunk10)).
+
+<br>
+
+To describe differences among clusters, I performed further statistical comparisons of both joining methods (taking the Jaccard distance as an example):
+
+ - Wards-linkage HC (Jaccard)
+```{r figchunk11,fig.cap="Boxplot of Wards-linkage HC (Jaccard)",message=TRUE, warning=TRUE}
+x3 <- rep(as.factor(cutree(hc_ward_b,k=5)),29)
+y <- as.vector(dom)
+
+
+boxplot(y~x3,xlab="clusters",ylab = "dominant copepod compositions",main="Wards-linkage HC (Jaccard)")
+```
+
+<br>
+
+
+```{r message=TRUE, warning=TRUE}
+#anova
+summary(aov(y~x3))
+
+
+# Kruskal-Wallis Test
+kruskal.test(y~x3) 
+
+
+#Dunn Post Hoc test
+dunn3 <-  FSA::dunnTest(y~x3,method= "bonferroni")  
+dunn3[[2]][dunn3[[2]]$P.adj<=0.05,] #select Comparisons with p smaller than 0.05
+```
+
+
+Significant results in ward-linkage HC are shown by the Kruskal-Wallis test (K-W chi-squared = 46.523, df = 4, p-values = 1.917`*`10^-9^), cluster 1 is significantly different from all other clusters, and clusters 3 is significantly different from cluster 5.
+
+<br>
+
+  - Average-linkage HC (Jaccard)
+```{r figchunk12,fig.cap = "Boxplot of Average-linkage HC (Jaccard)", message=TRUE, warning=TRUE}
+x4 <- rep(as.factor(cutree(hc_avg_b,k=7)),29)
+y <- as.vector(dom)
+
+
+boxplot(y~x4,xlab="clusters",ylab = "dominant copepod compositions",main="Average-linkage HC (Jaccard)")
+```
+
+<br>
+
+```{r message=TRUE, warning=TRUE}
+#anova
+summary(aov(y~x4))
+
+
+# Kruskal-Wallis Test
+kruskal.test(y~x4) 
+
+
+#Dunn Post Hoc test
+dunn4 <-  FSA::dunnTest(y~x4,method= "bonferroni")
+dunn4[[2]][dunn4[[2]]$P.adj<=0.05,] #select Comparisons with p smaller than 0.05 
+
+```
+
+Significant results in average-linkage HC are shown by Kruskal-Wallis test (K-W chi-squared = 54.455, df = 6, p-values = 5.972`*`10^-10^), cluster 1 is significantly different from cluster 2 (Z = -4.411, adjusted p = 2.161`*`10-4), cluster 3 (Z = -7.045, adjusted p = 3.906`*`10^-11^), and cluster 7 (Z = -4.557, adjusted p = 1.092`*`10^-4^).
+
+---
+
+# Discussion
+
+In NHC, we can briefly divide data into 3 groups, corresponding to 3 seasons: summer, spring, and winter (Fig \@ref(fig:figchunk3) and Fig \@ref(fig:figchunk4)). The dominant copepod compositions are higher in summer or winter, and lower in spring (Fig \@ref(fig:figchunk5) and Fig \@ref(fig:figchunk6)). Then in HC, more detailed results were shown. Either Ward-linkage or average-linkage HC performs a similar pattern, that the data in spring separated into two parts, one part (p1, p3, p4, p6, p21, sometimes p16) was significantly lower than summer and winter, the other part was in between summer and winter and showed no significant difference by Kruskal-Wallis test. In order to describe this pattern, I looked for temperature data corresponding to each cruise-station, finding that the temperature in spring varied largely (Fig \@ref(fig:figchunk13)). 
+Cruise-stations in spring with lower temperatures (< 15°C) had lower copepod compositions. However when the temperature >15°C, which was similar to that of winter sampling, the compositions had no differences with winter (Fig \@ref(fig:figchunk14)). 
+
+```{r figchunk13,fig.dim=c(6,7),fig.cap="Boxplot of temperature among seasons",message=TRUE, warning=TRUE}
+#perform environmental data
+
+season <- c(rep("spring",10),rep("summer",15),rep("winter",9))
+en[,length(en[1,])+1] <- season
+colnames(en) <- c(colnames(en)[1:12],"season")
+
+
+boxplot(en$Temperature~season,ylab="temperature")
+```
+
+
+
+```{r figchunk14,fig.width=20,fig.cap="Scatter plot of temperature among seasons",message=TRUE, warning=TRUE}
+ggplot(data = en, mapping = aes(x=as.factor(station),y=Temperature,colour=season))+
+  geom_point()+
+  xlab("Cruise-station")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.title.x = element_text(margin = margin(t = 15))) 
+
+```
+
+
+
+

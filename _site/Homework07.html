@@ -275,25 +275,28 @@ h3 { /* Header 3 */
 <ul>
 <li>Data preview</li>
 </ul>
-<pre class="r"><code>head(cop_com,5)</code></pre>
+<pre class="r"><code>head(cop_com)</code></pre>
 <pre><code>##             cop_name p1 p3 p4 p6 p13 p16  p19 p21  p23  p25  s18  s19  s20  s22
 ## 1   Acartia bifilosa  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
 ## 2  Acartia erythraea  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
 ## 3 Acartia negligence  0  0  0  0   0   0 0.02   0 0.03 0.02 0.00 0.00 0.00 0.00
 ## 4      Acartia omori  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
 ## 5   Acartia pacifica  0  0  0  0   0   0 0.00   0 0.00 0.00 0.04 0.02 0.01 0.05
-##    s23  s25  s27 s29   sA   sB   sC   sD   sE   sF   sG  w22  w23  w25  w27
-## 1 0.00 0.00 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
-## 2 0.00 0.00 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
-## 3 0.00 0.00 0.02   0 0.03 0.01 0.01 0.01 0.03 0.00 0.01 0.00 0.00 0.00 0.00
-## 4 0.00 0.00 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
-## 5 0.08 0.01 0.00   0 0.00 0.00 0.00 0.00 0.00 0.02 0.00 0.19 0.52 0.03 0.04
+## 6         Acartia sp  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
+##    s23  s25  s27  s29   sA   sB   sC   sD   sE   sF   sG  w22  w23  w25  w27
+## 1 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 2 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 3 0.00 0.00 0.02 0.00 0.03 0.01 0.01 0.01 0.03 0.00 0.01 0.00 0.00 0.00 0.00
+## 4 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 5 0.08 0.01 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.02 0.00 0.19 0.52 0.03 0.04
+## 6 0.00 0.00 0.01 0.02 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
 ##    w29   wA   wB   wC   wD
 ## 1 0.00 0.00 0.00 0.00 0.00
 ## 2 0.00 0.00 0.00 0.00 0.00
 ## 3 0.00 0.00 0.02 0.01 0.01
 ## 4 0.00 0.00 0.00 0.00 0.00
-## 5 0.06 0.01 0.00 0.00 0.01</code></pre>
+## 5 0.06 0.01 0.00 0.00 0.01
+## 6 0.00 0.00 0.00 0.00 0.00</code></pre>
 <p><br></p>
 </div>
 <div id="environmental-variables" class="section level2" number="1.2">
@@ -327,7 +330,7 @@ h3 { /* Header 3 */
 </div>
 <div id="question" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Question</h1>
-<p>Use the “dominant” copepod species data (from HW1). Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data. You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.</p>
+<p>Use the “dominant” (composition &gt; 5%) copepod species data (from HW1). Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data. You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.</p>
 <ul>
 <li>Try to compare the results between different cluster algorithms</li>
 <li>Determine final number of clusters and describe differences among them</li>

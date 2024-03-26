@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="林畇沂" />
+
+
+<title>Clustering Analysis</title>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Clustering Analysis</h1>
+<h3 class="subtitle">Computer Intensive Statistics in Ecology Homework #07</h3>
+<h4 class="author">林畇沂</h4>
+
+</div>
+
+
+<style type="text/css">
+
+h1.title {
+  font-size: 32px;
+  color: DarkBlue;
+}
+h1 { /* Header 1 */
+  font-size: 25px;
+}
+h2 { /* Header 2 */
+    font-size: 20px;
+}
+h3 { /* Header 3 */
+  font-size: 16px;
+}
+
+</style>
+<hr />
+<div id="data" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Data</h1>
+<div id="species-composition" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Species composition</h2>
+<p>The proportional abundance of each copepod species was recorded in each cruise-station and in each season. 10 cruise-stations were sampled in spring (p1~p25), 15 stations were sampled in summer (s18~s29, sA~sG), and 9 stations were sampled in winter (w23~w29, wA~wD), 34 stations in total. 181 rows represent 181 copepod species.</p>
+<ul>
+<li>Data preview</li>
+</ul>
+<pre class="r"><code>head(cop_com)</code></pre>
+<pre><code>##             cop_name p1 p3 p4 p6 p13 p16  p19 p21  p23  p25  s18  s19  s20  s22
+## 1   Acartia bifilosa  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
+## 2  Acartia erythraea  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
+## 3 Acartia negligence  0  0  0  0   0   0 0.02   0 0.03 0.02 0.00 0.00 0.00 0.00
+## 4      Acartia omori  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
+## 5   Acartia pacifica  0  0  0  0   0   0 0.00   0 0.00 0.00 0.04 0.02 0.01 0.05
+## 6         Acartia sp  0  0  0  0   0   0 0.00   0 0.00 0.00 0.00 0.00 0.00 0.00
+##    s23  s25  s27  s29   sA   sB   sC   sD   sE   sF   sG  w22  w23  w25  w27
+## 1 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 2 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 3 0.00 0.00 0.02 0.00 0.03 0.01 0.01 0.01 0.03 0.00 0.01 0.00 0.00 0.00 0.00
+## 4 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+## 5 0.08 0.01 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.02 0.00 0.19 0.52 0.03 0.04
+## 6 0.00 0.00 0.01 0.02 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+##    w29   wA   wB   wC   wD
+## 1 0.00 0.00 0.00 0.00 0.00
+## 2 0.00 0.00 0.00 0.00 0.00
+## 3 0.00 0.00 0.02 0.01 0.01
+## 4 0.00 0.00 0.00 0.00 0.00
+## 5 0.06 0.01 0.00 0.00 0.01
+## 6 0.00 0.00 0.00 0.00 0.00</code></pre>
+<p><br></p>
+</div>
+<div id="environmental-variables" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Environmental variables</h2>
+<p>The environmental data for each cruise-station. This includes temperature, salinity, fluorescence, and dissolved oxygen (DO). Here I used temperature as a factor to describe the difference among clusters of dominant copepod compositions.</p>
+<pre class="r"><code>head(en,10)</code></pre>
+<pre><code>##    station Depth Temperature Salinity Fluorescence DissolvedOxygen    maxT
+## 1       p1    70     14.7095  32.6280       0.1075          8.2966 14.7484
+## 2       p3    80     13.5606  32.1065       0.2908          8.5220 13.7238
+## 3       p4    72     13.6611  32.2719       0.3374          8.4956 13.8992
+## 4       p6    41     10.5510  29.5606       0.2715          9.2340 11.0311
+## 5      p13    56     13.6717  31.2214       0.2667          8.5491 19.3612
+## 6      p16    50     18.7005  33.4288       0.3048          7.6347 20.0033
+## 7      p19    46     21.3065  34.3489       0.2723          7.2354 21.3220
+## 8      p21    35     13.0840  30.4177       0.2360          8.6978 15.0415
+## 9      p23    60     22.5234  34.4179       0.2376          7.0762 22.5258
+## 10     p25    31     21.8362  34.3987       0.2870          7.1645 21.8579
+##       maxS   maxF  MaxDO FishDensity CopepodDensity
+## 1  32.6428 0.2015 8.3010   137.32340           1119
+## 2  32.3848 0.3293 8.5223    20.96762           1153
+## 3  33.0439 0.3932 8.5209     0.00000           1719
+## 4  31.3424 0.2965 9.2352     0.00000            855
+## 5  34.1351 0.3631 8.5671   180.71356           1246
+## 6  34.0795 0.9972 7.6349    88.35045           2123
+## 7  34.3911 0.4702 7.2415   632.52477           1159
+## 8  32.8234 0.2802 8.7356    73.60188           1497
+## 9  34.4269 0.5652 7.0782  1021.90111           1351
+## 10 34.4576 0.3617 7.2638   555.77271            960</code></pre>
+<hr />
+</div>
+</div>
+<div id="question" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Question</h1>
+<p>Use the “dominant” (composition &gt; 5%) copepod species data (from HW1). Perform cluster analysis of stations based on percent composition data of the dominant species and tell your story about these copepod data. You can try to run the example analysis using the environmental data from HW3 to familiarize yourself with cluster analysis.</p>
+<ul>
+<li>Try to compare the results between different cluster algorithms</li>
+<li>Determine final number of clusters and describe differences among them</li>
+</ul>
+<hr />
+</div>
+<div id="analysis" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Analysis</h1>
+<div id="non-hierarchical-clustering-nhc" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Non-hierarchical clustering (NHC)</h2>
+<p>To determine how many clusters should I generate, I made the scree plots of elbow method. Here I performed two clustering methods: K-means and K-medoid (pam).</p>
+<ul>
+<li>Prepare data set for clustering <br>
+(<strong>Notice</strong>: Since the data is proportional, there is no need for standardization)</li>
+</ul>
+<pre class="r"><code> cop_com &lt;- cop_com[,-1]
+
+# select dominant species
+dominant &lt;- c()
+for (j in 1:181) { 
+  
+  t.f &lt;- cop_com[j,]&gt;=0.05
+  #for the species j, if their composition &gt;= 5% in any station,
+  #t.f will contain at least 1 TRUE, means the length of t.f==T will &gt;0
+  
+  if(length(t.f[t.f==T])&gt;0) {
+    dominant[j] &lt;- &quot;yes&quot;
+    #if composition of species j &gt;=5%, assign &quot;yes&quot; as the jth element of the new, blank vecter&quot;dominant&quot;
+  }
+  else{
+    dominant[j] &lt;- &quot;no&quot;
+    #if composition of species j &lt;5%, assign &quot;no&quot; 
+  }
+  
+}
+
+#dominant copepod composition
+dom &lt;- t(cop_com[dominant==&quot;yes&quot;,])</code></pre>
+<ul>
+<li>Elbow scree plots:</li>
+</ul>
+<pre class="r"><code>library(&quot;vegan&quot;)
+library(&quot;cluster&quot;)
+library(&quot;fpc&quot;)
+library(&quot;ggplot2&quot;)
+library(&quot;factoextra&quot;)
+
+#determine numbers of clusters by elbow (K-medoid)
+fviz_nbclust(dom, 
+             FUNcluster = pam,   #K-means, pam, hcut, clara
+             method = &quot;wss&quot;,     # total within sum of square
+             k.max = 20         # max number of clusters to consider
+) + 
+  
+  labs(title=&quot;Elbow (K-medoid)&quot;
+) +
+  
+  ylab(&quot;Within groups sum of squares&quot;
+)+
+  geom_vline(xintercept = 3,      
+             linetype = 2)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk1"></span>
+<img src="index_files/figure-html/figchunk1-1.png" alt="Elbow (K-medoid)" width="768" />
+<p class="caption">
+Figure 3.1: Elbow (K-medoid)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#determine numbers of clusters by elbow (K-means)
+fviz_nbclust(dom, 
+             FUNcluster = kmeans,   
+             method = &quot;wss&quot;,     
+             k.max = 20         
+) + 
+  
+  labs(title=&quot;Elbow (K-means)&quot;
+  ) +
+  
+  ylab(&quot;Within groups sum of squares&quot;
+  )+
+  geom_vline(xintercept = 3,      
+             linetype = 2)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk2"></span>
+<img src="index_files/figure-html/figchunk2-1.png" alt="Elbow (K-means)" width="768" />
+<p class="caption">
+Figure 3.2: Elbow (K-means)
+</p>
+</div>
+<p><br></p>
+<p>Suggesting by the elbow plots, the ideal numbers of clusters are 3 for both K-means and K-medoid.</p>
+<p><br></p>
+<ul>
+<li>Generate cluster plots:</li>
+</ul>
+<pre class="r"><code>dom_pam &lt;-pam(dom,k=3)    # apply NHC using pam (K-medoid) method
+dom_kme &lt;-kmeans(dom,centers=3)  # apply NHC using K-means method
+
+#cluster plot (K-medoid)
+fviz_cluster(dom_pam,       
+             data = dom,           
+             geom = c(&quot;text&quot;,&quot;point&quot;), 
+             stand = F,
+             frame.type = &quot;norm&quot;,
+             ellipse = T
+            
+)+
+  labs(title = &quot;Cluster plot (K-medoid)&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk3"></span>
+<img src="index_files/figure-html/figchunk3-1.png" alt="Cluster plot (K-medoid)" width="768" />
+<p class="caption">
+Figure 3.3: Cluster plot (K-medoid)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#cluster plot (K-means)
+fviz_cluster(dom_kme,       
+             data = dom,           
+             geom = c(&quot;text&quot;,&quot;point&quot;), 
+             stand = F,
+             frame.type = &quot;norm&quot;,
+             ellipse = T
+)+
+  labs(title = &quot;Cluster plot (K-means)&quot;)  </code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk4"></span>
+<img src="index_files/figure-html/figchunk4-1.png" alt="Cluster plot (K-means)" width="768" />
+<p class="caption">
+Figure 3.4: Cluster plot (K-means)
+</p>
+</div>
+<p><br></p>
+<p>The two methods showed quite similar clustering geometries(Fig <a href="#fig:figchunk3">3.3</a> and Fig <a href="#fig:figchunk4">3.4</a>. To describe differences among clusters, I performed further statistical comparisons:</p>
+<pre class="r"><code>x &lt;- as.factor(rep(dom_pam$cluster,29))  #cluster groups of K-medoid
+y &lt;- as.vector(dom)  #dominant species composition
+
+
+#boxplot
+boxplot(y~x,xlab=&quot;clusters&quot;,ylab = &quot;Dominant copepod compositions &quot;,main=&quot;K-medoid&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk5"></span>
+<img src="index_files/figure-html/figchunk5-1.png" alt="Boxplot of K-medoid NHC" width="768" />
+<p class="caption">
+Figure 3.5: Boxplot of K-medoid NHC
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#anova
+summary(aov(y~x))</code></pre>
+<pre><code>##              Df Sum Sq  Mean Sq F value Pr(&gt;F)
+## x             2  0.003 0.001269   0.235   0.79
+## Residuals   983  5.301 0.005393</code></pre>
+<pre class="r"><code>#Levene&#39;s Test for Homogeneity of Variance
+lawstat::levene.test(y,x)</code></pre>
+<pre><code>## 
+##  Modified robust Brown-Forsythe Levene-type test based on the absolute
+##  deviations from the median
+## 
+## data:  y
+## Test Statistic = 0.37703, p-value = 0.686</code></pre>
+<pre class="r"><code># Kruskal-Wallis Test
+kruskal.test(y~x)  </code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  y by x
+## Kruskal-Wallis chi-squared = 26.213, df = 2, p-value = 2.032e-06</code></pre>
+<pre class="r"><code>#Dunn Post Hoc test
+
+dunn &lt;- FSA::dunnTest(y~x,method= &quot;bonferroni&quot;)
+dunn[[2]][dunn[[2]]$P.adj&lt;=0.05,]  #select Comparisons with p smaller than 0.05 </code></pre>
+<pre><code>##   Comparison         Z      P.unadj        P.adj
+## 1      1 - 2 -5.081584 3.743006e-07 1.122902e-06</code></pre>
+<p>According to the results of ANOVA, there are no significant difference among three clusters (F = 0.235, df = 2, p-value = 0.79) in K-medoid clustering. But for the Kruskal-Wallis test, significant results are shown (K-W chi-squared = 26.213, df = 2, p-values = 2.032<code>*</code>10<sup>-6</sup>), this difference came from that between cluster 1 and 2, based on Dunn post hoc test (Z = -5.082, adjusted p = 1.123<code>*</code>10<sup>-6</sup>).</p>
+<p><br></p>
+<pre class="r"><code>x2 &lt;- as.factor(rep(dom_kme$cluster,29)) #cluster groups of K-means
+
+#boxplot
+boxplot(y~x2,xlab=&quot;clusters&quot;,ylab = &quot;Dominant copepod compositions &quot;,main=&quot;K-means&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk6"></span>
+<img src="index_files/figure-html/figchunk6-1.png" alt="Boxplot of K-means NHC" width="768" />
+<p class="caption">
+Figure 3.6: Boxplot of K-means NHC
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#anova
+summary(aov(y~x2))</code></pre>
+<pre><code>##              Df Sum Sq  Mean Sq F value Pr(&gt;F)
+## x2            2  0.002 0.001177   0.218  0.804
+## Residuals   983  5.302 0.005393</code></pre>
+<pre class="r"><code>#Levene&#39;s Test for Homogeneity of Variance
+lawstat::levene.test(y,x2)</code></pre>
+<pre><code>## 
+##  Modified robust Brown-Forsythe Levene-type test based on the absolute
+##  deviations from the median
+## 
+## data:  y
+## Test Statistic = 0.31921, p-value = 0.7268</code></pre>
+<pre class="r"><code># Kruskal-Wallis Test
+kruskal.test(y~x2) </code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  y by x2
+## Kruskal-Wallis chi-squared = 26.352, df = 2, p-value = 1.896e-06</code></pre>
+<pre class="r"><code>#Dunn Post Hoc test
+dunn2 &lt;- FSA::dunnTest(y~x2,method= &quot;bonferroni&quot;)
+dunn2[[2]][dunn2[[2]]$P.adj&lt;=0.05,]  #select Comparisons with p smaller than 0.05 </code></pre>
+<pre><code>##   Comparison         Z      P.unadj        P.adj
+## 1      1 - 2  2.646321 8.137255e-03 2.441176e-02
+## 3      2 - 3 -5.121122 3.037238e-07 9.111714e-07</code></pre>
+<p>Similar to K-medoid clustering, there are no significant differences among three clusters based on ANOVA (F = 0.218, df = 2, p-value = 0.804) in K-means clustering. But for the Kruskal-Wallis test, significant results are shown (K-W chi-squared = 26.352, df = 2, p-values = 1.896<code>*</code>10<sup>-6</sup>), the difference came from that between cluster 1 and 2 (Z = 2.646, adjusted p = 0.024), also 2 and 3 (Z = -5.121, adjusted p = 9.112<code>*</code>10<sup>-7</sup>), based on the Dunn post hoc test.</p>
+<p>The contradiction of ANOVA and the Kruskal-Wallis test might be due to the heterogeneity of within-group variances, based on the Levene’s test (Test Statistic = 0.377, p = 0.686 for K-medoid; Test Statistic = 0.319, p = 0.727 for K-means)</p>
+<p><br></p>
+</div>
+<div id="hierarchical-clustering-hc" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Hierarchical clustering (HC)</h2>
+<p>For HC, I performed two joining methods: Ward’s minimum-variance-linkage and average-linkage, using two types of distance matrices: Jaccard and Euclidean distance respectively, and calculating their Agglomeration coefficient (AC).</p>
+<ul>
+<li>Distance matrices:</li>
+</ul>
+<pre class="r"><code>#distance matrices
+dom_bin &lt;- dist(dom,method=&quot;binary&quot;)  #binary: same as Jaccard
+dom_eucl &lt;- dist(dom,method=&quot;euclidean&quot;)</code></pre>
+<p><br></p>
+<ul>
+<li>Ward’s minimum-variance-linkage with Jaccard distance:</li>
+</ul>
+<pre class="r"><code>#conduct HC
+hc_ward_b &lt;- hclust(dom_bin,method=&quot;ward.D&quot;)  # Wards-linkage
+
+
+#dendrogram
+plot(hc_ward_b,main=&quot;Wards-linkage Dendrogram (Jaccard)&quot;,xlab=&quot;Station&quot;,labels=hc_ward_b[[4]])
+rect.hclust(hc_ward_b,h=1)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk7"></span>
+<img src="index_files/figure-html/figchunk7-1.png" alt="Wards-linkage Dendrogram (Jaccard)" width="768" />
+<p class="caption">
+Figure 3.7: Wards-linkage Dendrogram (Jaccard)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#aggolmerative coefficient
+ward_b_ac &lt;- agnes(dom_bin,method=&quot;ward&quot;)$ac
+ward_b_ac</code></pre>
+<pre><code>## [1] 0.8706802</code></pre>
+<p><br></p>
+<ul>
+<li>Ward’s minimum-variance-linkage with Euclidean distance:</li>
+</ul>
+<pre class="r"><code>#conduct HC
+hc_ward_e &lt;- hclust(dom_eucl,method=&quot;ward.D&quot;)
+
+
+#dendrogram
+plot(hc_ward_e,main=&quot;Wards-linkage Dendrogram (Euclidean)&quot;,xlab=&quot;Station&quot;,labels=hc_ward_e[[4]])
+rect.hclust(hc_ward_e,h=1)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk8"></span>
+<img src="index_files/figure-html/figchunk8-1.png" alt="Wards-linkage Dendrogram (Euclidean)" width="768" />
+<p class="caption">
+Figure 3.8: Wards-linkage Dendrogram (Euclidean)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#aggolmerative coefficient
+ward_e_ac &lt;- agnes(dom_eucl,method=&quot;ward&quot;)$ac
+ward_e_ac</code></pre>
+<pre><code>## [1] 0.8317349</code></pre>
+<p><br></p>
+<ul>
+<li>Average-linkage with Jaccard distance:</li>
+</ul>
+<pre class="r"><code>#conduct HC
+hc_avg_b &lt;- hclust(dom_bin,method=&quot;average&quot;)  # average-linkage
+
+
+#dendrogram
+plot(hc_avg_b,main=&quot;Average-linkage Dendrogram (Jaccard)&quot;,xlab=&quot;Station&quot;,labels=hc_avg_b[[4]])
+rect.hclust(hc_avg_b,h=0.5)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk9"></span>
+<img src="index_files/figure-html/figchunk9-1.png" alt="Average-linkage Dendrogram (Jaccard)" width="768" />
+<p class="caption">
+Figure 3.9: Average-linkage Dendrogram (Jaccard)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#aggolmerative coefficient
+avg_b_ac &lt;- agnes(dom_bin,method=&quot;average&quot;)$ac
+avg_b_ac </code></pre>
+<pre><code>## [1] 0.6937626</code></pre>
+<p><br></p>
+<ul>
+<li>Average-linkage with Euclidean distance:</li>
+</ul>
+<pre class="r"><code>#conduct HC
+hc_avg_e &lt;- hclust(dom_eucl,method=&quot;average&quot;) # average-linkage
+
+
+#dendrogram
+plot(hc_avg_e,main=&quot;Average-linkage Dendrogram (Euclidean)&quot;,xlab=&quot;Station&quot;,labels=hc_avg_e[[4]])</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk10"></span>
+<img src="index_files/figure-html/figchunk10-1.png" alt="Average-linkage Dendrogram (Euclidean)" width="768" />
+<p class="caption">
+Figure 3.10: Average-linkage Dendrogram (Euclidean)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#aggolmerative coefficient
+avg_e_ac &lt;- agnes(dom_eucl,method=&quot;average&quot;)$ac
+avg_e_ac</code></pre>
+<pre><code>## [1] 0.6492955</code></pre>
+<p>For Jaccard and Euclidean distance, AC values are only slightly different, but AC values are apparently higher in Ward-linkage HC, indicating a more balanced clustering structure (see Fig <a href="#fig:figchunk9">3.9</a> and Fig <a href="#fig:figchunk10">3.10</a>).</p>
+<p><br></p>
+<p>To describe differences among clusters, I performed further statistical comparisons of both joining methods (taking the Jaccard distance as an example):</p>
+<ul>
+<li>Wards-linkage HC (Jaccard)</li>
+</ul>
+<pre class="r"><code>x3 &lt;- rep(as.factor(cutree(hc_ward_b,k=5)),29)
+y &lt;- as.vector(dom)
+
+
+boxplot(y~x3,xlab=&quot;clusters&quot;,ylab = &quot;dominant copepod compositions&quot;,main=&quot;Wards-linkage HC (Jaccard)&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk11"></span>
+<img src="index_files/figure-html/figchunk11-1.png" alt="Boxplot of Wards-linkage HC (Jaccard)" width="768" />
+<p class="caption">
+Figure 3.11: Boxplot of Wards-linkage HC (Jaccard)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#anova
+summary(aov(y~x3))</code></pre>
+<pre><code>##              Df Sum Sq  Mean Sq F value Pr(&gt;F)
+## x3            4  0.003 0.000756    0.14  0.967
+## Residuals   981  5.301 0.005404</code></pre>
+<pre class="r"><code># Kruskal-Wallis Test
+kruskal.test(y~x3) </code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  y by x3
+## Kruskal-Wallis chi-squared = 46.523, df = 4, p-value = 1.917e-09</code></pre>
+<pre class="r"><code>#Dunn Post Hoc test
+dunn3 &lt;-  FSA::dunnTest(y~x3,method= &quot;bonferroni&quot;)  
+dunn3[[2]][dunn3[[2]]$P.adj&lt;=0.05,] #select Comparisons with p smaller than 0.05</code></pre>
+<pre><code>##   Comparison         Z      P.unadj        P.adj
+## 1      1 - 2 -4.411008 1.028905e-05 1.028905e-04
+## 2      1 - 3 -6.693401 2.180426e-11 2.180426e-10
+## 4      1 - 4 -4.966436 6.819461e-07 6.819461e-06
+## 7      1 - 5 -4.141992 3.443025e-05 3.443025e-04
+## 9      3 - 5  2.909054 3.625243e-03 3.625243e-02</code></pre>
+<p>Significant results in ward-linkage HC are shown by the Kruskal-Wallis test (K-W chi-squared = 46.523, df = 4, p-values = 1.917<code>*</code>10<sup>-9</sup>), cluster 1 is significantly different from all other clusters, and clusters 3 is significantly different from cluster 5.</p>
+<p><br></p>
+<ul>
+<li>Average-linkage HC (Jaccard)</li>
+</ul>
+<pre class="r"><code>x4 &lt;- rep(as.factor(cutree(hc_avg_b,k=7)),29)
+y &lt;- as.vector(dom)
+
+
+boxplot(y~x4,xlab=&quot;clusters&quot;,ylab = &quot;dominant copepod compositions&quot;,main=&quot;Average-linkage HC (Jaccard)&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk12"></span>
+<img src="index_files/figure-html/figchunk12-1.png" alt="Boxplot of Average-linkage HC (Jaccard)" width="768" />
+<p class="caption">
+Figure 3.12: Boxplot of Average-linkage HC (Jaccard)
+</p>
+</div>
+<p><br></p>
+<pre class="r"><code>#anova
+summary(aov(y~x4))</code></pre>
+<pre><code>##              Df Sum Sq  Mean Sq F value Pr(&gt;F)
+## x4            6  0.003 0.000523   0.097  0.997
+## Residuals   979  5.301 0.005415</code></pre>
+<pre class="r"><code># Kruskal-Wallis Test
+kruskal.test(y~x4) </code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  y by x4
+## Kruskal-Wallis chi-squared = 54.455, df = 6, p-value = 5.972e-10</code></pre>
+<pre class="r"><code>#Dunn Post Hoc test
+dunn4 &lt;-  FSA::dunnTest(y~x4,method= &quot;bonferroni&quot;)
+dunn4[[2]][dunn4[[2]]$P.adj&lt;=0.05,] #select Comparisons with p smaller than 0.05 </code></pre>
+<pre><code>##    Comparison         Z      P.unadj        P.adj
+## 1       1 - 2 -4.411008 1.028905e-05 2.160701e-04
+## 2       1 - 3 -7.044604 1.859900e-12 3.905790e-11
+## 16      1 - 7 -4.556640 5.197842e-06 1.091547e-04</code></pre>
+<p>Significant results in average-linkage HC are shown by Kruskal-Wallis test (K-W chi-squared = 54.455, df = 6, p-values = 5.972<code>*</code>10<sup>-10</sup>), cluster 1 is significantly different from cluster 2 (Z = -4.411, adjusted p = 2.161<code>*</code>10-4), cluster 3 (Z = -7.045, adjusted p = 3.906<code>*</code>10<sup>-11</sup>), and cluster 7 (Z = -4.557, adjusted p = 1.092<code>*</code>10<sup>-4</sup>).</p>
+<hr />
+</div>
+</div>
+<div id="discussion" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Discussion</h1>
+<p>In NHC, we can briefly divide data into 3 groups, corresponding to 3 seasons: summer, spring, and winter (Fig <a href="#fig:figchunk3">3.3</a> and Fig <a href="#fig:figchunk4">3.4</a>). The dominant copepod compositions are higher in summer or winter, and lower in spring (Fig <a href="#fig:figchunk5">3.5</a> and Fig <a href="#fig:figchunk6">3.6</a>). Then in HC, more detailed results were shown. Either Ward-linkage or average-linkage HC performs a similar pattern, that the data in spring separated into two parts, one part (p1, p3, p4, p6, p21, sometimes p16) was significantly lower than summer and winter, the other part was in between summer and winter and showed no significant difference by Kruskal-Wallis test. In order to describe this pattern, I looked for temperature data corresponding to each cruise-station, finding that the temperature in spring varied largely (Fig <a href="#fig:figchunk13">4.1</a>).
+Cruise-stations in spring with lower temperatures (&lt; 15°C) had lower copepod compositions. However when the temperature &gt;15°C, which was similar to that of winter sampling, the compositions had no differences with winter (Fig <a href="#fig:figchunk14">4.2</a>).</p>
+<pre class="r"><code>#perform environmental data
+
+season &lt;- c(rep(&quot;spring&quot;,10),rep(&quot;summer&quot;,15),rep(&quot;winter&quot;,9))
+en[,length(en[1,])+1] &lt;- season
+colnames(en) &lt;- c(colnames(en)[1:12],&quot;season&quot;)
+
+
+boxplot(en$Temperature~season,ylab=&quot;temperature&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk13"></span>
+<img src="index_files/figure-html/figchunk13-1.png" alt="Boxplot of temperature among seasons" width="576" />
+<p class="caption">
+Figure 4.1: Boxplot of temperature among seasons
+</p>
+</div>
+<pre class="r"><code>ggplot(data = en, mapping = aes(x=as.factor(station),y=Temperature,colour=season))+
+  geom_point()+
+  xlab(&quot;Cruise-station&quot;)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.title.x = element_text(margin = margin(t = 15))) </code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:figchunk14"></span>
+<img src="index_files/figure-html/figchunk14-1.png" alt="Scatter plot of temperature among seasons" width="768" />
+<p class="caption">
+Figure 4.2: Scatter plot of temperature among seasons
+</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

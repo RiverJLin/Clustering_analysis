@@ -384,7 +384,7 @@ For Jaccard and Euclidean distance, AC values are only slightly different, but A
 To describe differences among clusters, I performed further statistical comparisons of both joining methods (taking the Jaccard distance as an example):
 
  - Wards-linkage HC (Jaccard)
-```{r figchunk11,fig.dim=c(6,7),fig.cap="Boxplot of Wards-linkage HC (Jaccard)",message=TRUE, warning=TRUE}
+```{r figchunk11,fig.cap="Boxplot of Wards-linkage HC (Jaccard)",message=TRUE, warning=TRUE}
 x3 <- rep(as.factor(cutree(hc_ward_b,k=5)),29)
 y <- as.vector(dom)
 
@@ -415,7 +415,7 @@ Significant results in ward-linkage HC are shown by the Kruskal-Wallis test (K-W
 <br>
 
   - Average-linkage HC (Jaccard)
-```{r figchunk12,fig.dim=c(6,7),fig.cap = "Boxplot of Average-linkage HC (Jaccard)", message=TRUE, warning=TRUE}
+```{r figchunk12,fig.cap = "Boxplot of Average-linkage HC (Jaccard)", message=TRUE, warning=TRUE}
 x4 <- rep(as.factor(cutree(hc_avg_b,k=7)),29)
 y <- as.vector(dom)
 
